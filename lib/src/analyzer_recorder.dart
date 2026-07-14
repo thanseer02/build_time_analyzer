@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'performance_metrics.dart';
+import 'logger.dart';
 
 /// Singleton class for recording and aggregating performance metrics.
 class AnalyzerRecorder extends ChangeNotifier {
@@ -73,6 +74,10 @@ class AnalyzerRecorder extends ChangeNotifier {
         lastBuildTime: timestamp,
       );
     }
+    
+    if (duration > thresholds.slowBuildThreshold) {
+      AnalyzerLogger.logSlowBuild(name, duration, thresholds.slowBuildThreshold);
+    }
   }
 
   void recordFrame(int frameNumber, Duration buildDuration, Duration rasterDuration) {
@@ -87,6 +92,10 @@ class AnalyzerRecorder extends ChangeNotifier {
       rasterDuration: rasterDuration,
       isJanky: isJanky,
     ));
+    
+    if (isJanky) {
+      AnalyzerLogger.logJankyFrame(frameNumber, buildDuration, rasterDuration, thresholds.jankyFrameThreshold);
+    }
     
     // Periodically notify listeners to avoid overwhelming the UI
     if (frameNumber % 60 == 0) {

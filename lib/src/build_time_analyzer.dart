@@ -3,6 +3,8 @@ import 'package:flutter/widgets.dart';
 
 import 'analyzer_recorder.dart';
 import 'performance_metrics.dart';
+import 'frame_tracker.dart';
+import 'dashboard_overlay.dart';
 
 /// The main entry point and configuration for the Build Time Analyzer.
 class BuildTimeAnalyzer extends StatefulWidget {
@@ -77,18 +79,21 @@ class _BuildTrackerState extends State<_BuildTracker> with WidgetsBindingObserve
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    // TODO: Setup frame timing and widget tree traversal hooks
+    FrameTracker.initialize();
   }
 
   @override
   void dispose() {
+    FrameTracker.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // TODO: Add live dashboard and heatmap overlay
-    return widget.child;
+    return DashboardOverlay(
+      showOverlay: widget.showOverlay,
+      child: widget.child,
+    );
   }
 }

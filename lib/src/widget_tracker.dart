@@ -41,9 +41,10 @@ mixin TrackedStateMixin<T extends StatefulWidget> on State<T> {
   String get trackedName => widget.runtimeType.toString();
 
   @override
-  void build(BuildContext context) {
+  Widget build(BuildContext context) {
     // This mixin relies on the user calling super.build(context), 
     // which is not the standard Flutter pattern (build must be overridden).
     // Therefore, using TrackedWidget is the preferred approach.
+    throw UnimplementedError();
   }
 }
