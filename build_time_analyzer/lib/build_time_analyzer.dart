@@ -1,0 +1,5 @@
+library build_time_analyzer;
+
+export 'src/build_time_analyzer.dart';
+export 'src/analyzer_recorder.dart';
+export 'src/performance_metrics.dart';
