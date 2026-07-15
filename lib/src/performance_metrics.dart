@@ -37,6 +37,23 @@ class WidgetStats {
   }
 }
 
+enum FrameStatus { smooth, slightDelay, slow, jank }
+
+extension FrameStatusExtension on FrameStatus {
+  String get display {
+    switch (this) {
+      case FrameStatus.smooth:
+        return '🟢 Smooth';
+      case FrameStatus.slightDelay:
+        return '🟡 Slight Delay';
+      case FrameStatus.slow:
+        return '🟠 Slow';
+      case FrameStatus.jank:
+        return '🔴 Jank';
+    }
+  }
+}
+
 class FrameRecord {
   final int frameNumber;
   final Duration buildDuration;
@@ -51,6 +68,20 @@ class FrameRecord {
   });
 
   Duration get totalDuration => buildDuration + rasterDuration;
+
+  int get fps {
+    final ms = totalDuration.inMilliseconds;
+    if (ms <= 0) return 60; // Max reasonable baseline if 0ms
+    return 1000 ~/ ms;
+  }
+
+  FrameStatus get status {
+    final ms = totalDuration.inMilliseconds;
+    if (ms < 16) return FrameStatus.smooth;
+    if (ms <= 20) return FrameStatus.slightDelay;
+    if (ms <= 30) return FrameStatus.slow;
+    return FrameStatus.jank;
+  }
 }
 
 class AnalyzerThresholds {

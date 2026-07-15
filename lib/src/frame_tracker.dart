@@ -1,6 +1,4 @@
-import 'dart:ui';
 import 'package:flutter/scheduler.dart';
-import 'package:flutter/widgets.dart';
 
 import 'analyzer_recorder.dart';
 

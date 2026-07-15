@@ -1,4 +1,4 @@
-# Build Time Analyzer ⏱️
+# Widget Time Checker ⏱️
 
 A production-ready Flutter performance analysis plugin that identifies expensive widget builds, excessive rebuild frequencies, and frame performance bottlenecks during development.
 
@@ -8,10 +8,12 @@ A production-ready Flutter performance analysis plugin that identifies expensive
 
 ## 🌟 Features
 
+* **Premium In-App Dashboard**: A sleek, glassmorphic UI overlay that tracks widget builds in real-time.
 * **Widget Build Time Tracking**: Measure exact milliseconds spent building specific widgets.
 * **Rebuild Counter**: Identify widgets that are rebuilding too frequently.
-* **Frame Analysis**: Track FPS, build duration, and raster duration per frame.
-* **Slow Widget Detection**: Configurable thresholds to highlight slow builds.
+* **Janky Frame Tracking**: Monitor frame rasterization and build times, with live counts in the dashboard.
+* **Actionable Insights**: The dashboard and debug console will explain exactly *why* a widget is slow and offer actionable tips to fix it.
+* **Console Logging**: All metrics automatically print out clean, tabulated data to your debug console.
 * **Zero Release Overhead**: Automatically disables itself in `kReleaseMode`.
 
 ---
@@ -42,7 +44,7 @@ void main() {
   runApp(
     BuildTimeAnalyzer(
       showOverlay: true,
-      threshold: Duration(milliseconds: 5),
+      threshold: Duration(milliseconds: 15),
       child: const MyApp(),
     ),
   );
@@ -69,6 +71,18 @@ class HeavyWidget extends StatelessWidget {
 
 ---
 
+## 📱 The Dashboard Overlay
+
+When `showOverlay: true` is set, a speed icon will float in the bottom right corner of your app. Tapping it reveals a premium dashboard containing:
+
+1. **Janky Frames Banner**: A live counter at the top indicating how many frames took too long to build.
+2. **Widget List**: A sorted list of all `TrackedWidget`s, detailing their Average Build Time, Max Build Time, and Total Builds.
+3. **Slow Widget Alerts**: If a widget exceeds the `slowBuildThreshold`, it is highlighted in red. The UI will expand to give you common reasons for the slow build (e.g., synchronous computations, deep nesting) to help you fix it immediately!
+
+*Note: Tapping the overlay also dumps a nicely formatted table of these metrics directly into your IDE's debug console.*
+
+---
+
 ## 📊 How it Works
 
 The analyzer runs only in **Debug** and **Profile** modes.
@@ -86,7 +100,7 @@ The `BuildTimeAnalyzer` widget accepts several parameters:
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `enabled` | `bool` | `true` | Manually toggle the analyzer on or off. |
-| `showOverlay`| `bool` | `true` | Show the in-app performance dashboard and heatmaps. |
+| `showOverlay`| `bool` | `true` | Show the in-app performance dashboard. |
 | `threshold` | `Duration` | `5ms` | The threshold above which a build is considered "slow". |
 | `exportPath`| `String?`| `null` | Optional path to automatically export performance reports. |
 
@@ -94,10 +108,10 @@ The `BuildTimeAnalyzer` widget accepts several parameters:
 
 ## 💡 Optimization Suggestions
 
-If the analyzer flags a widget, consider these common fixes:
-* **High Rebuild Count**: Use `const` constructors where possible, or isolate state using `Selector` or `Provider`.
-* **Long Build Time**: Break the widget down into smaller, granular widgets.
-* **Expensive Layouts**: Avoid deep nested rows/columns. Consider `CustomMultiChildLayout` or simplifying the tree.
+If the analyzer flags a widget as slow, consider these common fixes:
+* **High Rebuild Count**: Use `ValueNotifier` or `ValueListenableBuilder` to selectively update only the widgets that need to change, instead of calling `setState` at the top of your tree. 
+* **Long Build Time**: Move heavy synchronous operations (like parsing JSON) to `initState()` or background isolates via `compute()`.
+* **Expensive Layouts**: Avoid deeply nested rows/columns. Simplify the tree and use `const` constructors wherever possible.
 
 ---
 

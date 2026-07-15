@@ -61,6 +61,16 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+  final List<ValueNotifier<int>> _itemCounters =
+      List.generate(5, (_) => ValueNotifier<int>(0));
+
+  @override
+  void dispose() {
+    for (var notifier in _itemCounters) {
+      notifier.dispose();
+    }
+    super.dispose();
+  }
 
   void _incrementCounter() {
     setState(() {
@@ -91,29 +101,120 @@ class _MyHomePageState extends State<MyHomePage> {
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
+      body: TrackedWidget(
+        name: 'MainBody',
+        child: ListView(
+          padding: const EdgeInsets.all(16),
           children: [
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+            TrackedWidget(
+              name: 'HeaderSection',
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 20),
+                child: Text(
+                  'Performance Tracker Demo',
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
+              ),
+            ),
+            TrackedWidget(
+              name: 'CounterSection',
+              child: Card(
+                elevation: 4,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      const Text('You have pushed the button this many times:'),
+                      Text(
+                        '$_counter',
+                        style:
+                            Theme.of(context).textTheme.headlineLarge?.copyWith(
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            TrackedWidget(
+              name: 'Extremely Slow Widget',
+              child: Builder(
+                builder: (context) {
+                  // Simulate a heavy synchronous computation (e.g., parsing huge JSON, heavy math, synchronous IO)
+                  final stopwatch = Stopwatch()..start();
+                  while (stopwatch.elapsedMilliseconds < 100) {}
+
+                  return Card(
+                    color: Colors.red.shade100,
+                    child: const Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Text(
+                          'This widget is INTENTIONALLY SLOW (100ms block)!'),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 20),
+            TrackedWidget(
+              name: 'Partial Update Buttons',
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      _itemCounters[1].value++;
+                      _itemCounters[2].value++;
+                    },
+                    child: const Text('Update 1 & 2'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      _itemCounters[0].value++;
+                      _itemCounters[3].value++;
+                      _itemCounters[4].value++;
+                    },
+                    child: const Text('Update Rest'),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            TrackedWidget(
+              name: 'ListSection',
+              child: Column(
+                children: List.generate(
+                  5,
+                  (index) => ValueListenableBuilder<int>(
+                    valueListenable: _itemCounters[index],
+                    builder: (context, value, child) {
+                      final isIntentionallySlow = index == 1 || index == 2;
+                      if (isIntentionallySlow) {
+                        final stopwatch = Stopwatch()..start();
+                        while (stopwatch.elapsedMilliseconds < 50) {}
+                      }
+                      
+                      return TrackedWidget(
+                        name: 'ListItem_$index',
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: isIntentionallySlow ? Colors.red.shade100 : null,
+                            child: Text('$index'),
+                          ),
+                          title: Text('Item $index'),
+                          subtitle: Text(
+                            isIntentionallySlow 
+                                ? 'Updated $value times (SLOW build)' 
+                                : 'Updated $value times (Fast build)'
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
             ),
           ],
         ),
