@@ -4,29 +4,37 @@ class BuildRecord {
   final String widgetName;
   final Duration buildDuration;
   final String? parentWidget;
+  final int depth;
   final DateTime timestamp;
 
   BuildRecord({
     required this.widgetName,
     required this.buildDuration,
     this.parentWidget,
+    this.depth = 0,
     required this.timestamp,
   });
 }
 
 class WidgetStats {
   final String widgetName;
+  final String? parentWidget;
+  final int depth;
   Duration totalBuildTime;
   Duration maxBuildTime;
   Duration minBuildTime;
+  Duration lastDuration;
   int buildCount;
   DateTime lastBuildTime;
 
   WidgetStats({
     required this.widgetName,
+    this.parentWidget,
+    this.depth = 0,
     required this.totalBuildTime,
     required this.maxBuildTime,
     required this.minBuildTime,
+    required this.lastDuration,
     required this.buildCount,
     required this.lastBuildTime,
   });

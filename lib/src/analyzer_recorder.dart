@@ -54,7 +54,7 @@ class AnalyzerRecorder extends ChangeNotifier {
     notifyListeners();
   }
 
-  void recordWidgetBuild(String name, Duration duration, {String? parent}) {
+  void recordWidgetBuild(String name, Duration duration, {String? parent, int depth = 0}) {
     if (!_isRecording) return;
 
     final timestamp = DateTime.now();
@@ -62,6 +62,7 @@ class AnalyzerRecorder extends ChangeNotifier {
       widgetName: name,
       buildDuration: duration,
       parentWidget: parent,
+      depth: depth,
       timestamp: timestamp,
     ));
 
@@ -72,13 +73,17 @@ class AnalyzerRecorder extends ChangeNotifier {
       stat.totalBuildTime += duration;
       stat.maxBuildTime = _maxDuration(stat.maxBuildTime, duration);
       stat.minBuildTime = _minDuration(stat.minBuildTime, duration);
+      stat.lastDuration = duration;
       stat.lastBuildTime = timestamp;
     } else {
       stat = WidgetStats(
         widgetName: name,
+        parentWidget: parent,
+        depth: depth,
         totalBuildTime: duration,
         maxBuildTime: duration,
         minBuildTime: duration,
+        lastDuration: duration,
         buildCount: 1,
         lastBuildTime: timestamp,
       );

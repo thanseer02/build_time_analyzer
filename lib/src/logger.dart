@@ -32,14 +32,29 @@ class AnalyzerLogger {
     
     if (stats.isNotEmpty) {
       buffer.writeln('Widgets Built');
-      final sortedStats = stats.values.toList()
-        ..sort((a, b) => b.totalBuildTime.compareTo(a.totalBuildTime));
       
-      for (final stat in sortedStats.take(10)) {
+      final roots = stats.values.where((s) => s.depth == 0 || s.parentWidget == null).toList();
+      
+      void printTree(WidgetStats stat, String prefix, bool isLast) {
         final ms = (stat.averageBuildTime.inMicroseconds / 1000).toStringAsFixed(2);
         final marker = stat.averageBuildTime.inMilliseconds >= 16 ? ' 🔴' : '';
-        buffer.writeln('${stat.widgetName.padRight(30)} ${ms.padLeft(5)} ms$marker');
+        
+        final branch = stat.depth == 0 ? '' : (isLast ? '└── ' : '├── ');
+        final line = '$prefix$branch${stat.widgetName}';
+        
+        buffer.writeln('${line.padRight(40)} ${ms.padLeft(6)} ms$marker');
+        
+        final children = stats.values.where((s) => s.parentWidget == stat.widgetName).toList();
+        for (int i = 0; i < children.length; i++) {
+          final childPrefix = stat.depth == 0 ? '' : prefix + (isLast ? '    ' : '│   ');
+          printTree(children[i], childPrefix, i == children.length - 1);
+        }
       }
+
+      for (int i = 0; i < roots.length; i++) {
+        printTree(roots[i], '', i == roots.length - 1);
+      }
+      
       buffer.writeln('---');
     }
 
